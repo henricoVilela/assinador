@@ -6,7 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
 
-public class GetSenhaController {
+public class GetPasswordController {
 	
 	@FXML
 	private PasswordField passwordField;

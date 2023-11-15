@@ -1,56 +1,34 @@
 package br.com.cronos.assinador.model;
 
-import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
 public class Store {
 	
-	private String nome;
-	private String caminho;
-	private Long slot;
-	private LocalDate dataUtilizacao;
-	private String tipoCertificado;
+	private String alias;
+	private String path;
 	
-	public Store(String nome) {
+	public Store(String alias) {
 		super();
-		this.nome = nome;
+		this.alias = alias;
 	}
 	
-	public String getNome() {
-		return nome;
+	public String getAlias() {
+		return alias;
 	}
-	public void setNome(String nome) {
-		this.nome = nome;
+	public void setAlias(String nome) {
+		this.alias = nome;
 	}
-	public String getCaminho() {
-		return caminho;
+	public String getPath() {
+		return path;
 	}
-	public void setCaminho(String caminho) {
-		this.caminho = caminho;
+	public void setPath(String path) {
+		this.path = path;
 	}
-	public Long getSlot() {
-		return slot;
-	}
-	public void setSlot(Long slot) {
-		this.slot = slot;
-	}
-	public LocalDate getDataUtilizacao() {
-		return dataUtilizacao;
-	}
-	public void setDataUtilizacao(LocalDate dataUtilizacao) {
-		this.dataUtilizacao = dataUtilizacao;
-	}
-	public String getTipoCertificado() {
-		return tipoCertificado;
-	}
-	public void setTipoCertificado(String tipoCertificado) {
-		this.tipoCertificado = tipoCertificado;
-	}
-
+	
 	@Override
 	public int hashCode() {
-		return Objects.hash(nome);
+		return Objects.hash(alias);
 	}
 
 	@Override
@@ -62,22 +40,20 @@ public class Store {
 		if (getClass() != obj.getClass())
 			return false;
 		Store other = (Store) obj;
-		return Objects.equals(nome, other.nome);
+		return Objects.equals(alias, other.alias);
 	}
 
 	@Override
 	public String toString() {
-		return "Store [nome=" + nome + ", tipoCertificado=" + tipoCertificado + "]";
+		return "Store [alias=" + alias + "]";
 	}
 	
-	public CertificadoFromStore extrairCertificado() {
-        CertificadoFromStore to = new CertificadoFromStore();
+	public CertificateFromStore getInstanceCertificateFromStore() {
+        CertificateFromStore to = new CertificateFromStore();
         
-        to.setIdentificador(UUID.randomUUID().toString());
-        to.setCaminho(this.getCaminho());
-        to.setDataUtilizacao(this.getDataUtilizacao());
-        to.setNome(this.getNome());
-        to.setTipoCertificado(this.getTipoCertificado());
+        to.setIdentify(UUID.randomUUID().toString());
+        to.setPath(this.getPath());
+        to.setName(this.getAlias());
         
         return to;
 	}

@@ -24,22 +24,44 @@ import com.itextpdf.text.pdf.security.MakeSignature.CryptoStandard;
 import com.itextpdf.text.pdf.security.PrivateKeySignature;
 
 import br.com.cronos.assinador.exceptions.StoreException;
-import br.com.cronos.assinador.model.Certificado;
+import br.com.cronos.assinador.model.CertificateData;
 import br.com.cronos.assinador.model.FileInfo;
 import br.com.cronos.assinador.util.Constants;
 import br.com.cronos.assinador.util.Utils;
 
-public class AssinaturaService {
+public class SignService {
+	
+	/**
+	 * Modo de salvamento da assinatura
+	 * LOCAL - Sobreescreve os documentos informado com o documento assinado
+	 * SEND_TO_SERVICE - Envia os documentos assinados para uma url informada 
+	 */
+	public enum FileSavingMode {
+		LOCAL,
+		SEND_TO_SERVICE
+	}
 
-	public static void assinarDocumentos(List<FileInfo> files, Certificado cert) {
+	public static void signDocuments(List<FileInfo> files, CertificateData cert, FileSavingMode savingMode) {
 		try {
-			gerarHashDosArquivos(files, cert);
+			
+			switch (savingMode) {
+				case LOCAL:
+					signDocumentsAndSave(files, cert);
+					break;
+				case SEND_TO_SERVICE:
+					
+					break;
+			default:
+				break;
+			}
+			
+			
 		} catch (StoreException e) {
 			Utils.showErrorDialog("Erro ao assinar os documentos", e.getMessage());
 		}
 	}
 
-	private static void gerarHashDosArquivos(List<FileInfo> files, Certificado cert) throws StoreException {
+	private static void signDocumentsAndSave(List<FileInfo> files, CertificateData cert) throws StoreException {
 		int INITIAL_SIZE = 32;
 		byte[] bytesOfFile = null;
 		for (FileInfo fileInfo : files) {
@@ -47,10 +69,10 @@ public class AssinaturaService {
 			var baos = getPdfAssinado(bytesOfFile, cert.getCertificate(), cert.getPrivateKey());
 			
 			if (baos.size() > INITIAL_SIZE) {
-				String caminhoArquivo = "E:\\var\\arquivos_de_log\\"+fileInfo.getName();
-				try (FileOutputStream fos = new FileOutputStream(caminhoArquivo)) {
+				//String caminhoArquivo = "E:\\var\\arquivos_de_log\\"+fileInfo.getName();
+				try (FileOutputStream fos = new FileOutputStream(fileInfo.getPath())) {
 		            fos.write(baos.toByteArray());
-		            System.out.println("Arquivo salvo com sucesso em: " + caminhoArquivo);
+		            System.out.println("Arquivo salvo com sucesso em: " + fileInfo.getPath());
 		        } catch (IOException e) {
 		            e.printStackTrace();
 		        }

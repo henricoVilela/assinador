@@ -19,31 +19,31 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import br.com.cronos.assinador.exceptions.StoreException;
-import br.com.cronos.assinador.model.Certificado;
-import br.com.cronos.assinador.model.CertificadoA1;
-import br.com.cronos.assinador.model.CertificadoFromStore;
+import br.com.cronos.assinador.model.CertificateA1;
+import br.com.cronos.assinador.model.CertificateData;
+import br.com.cronos.assinador.model.CertificateFromStore;
 import br.com.cronos.assinador.model.Store;
 import br.com.cronos.assinador.util.Constants;
 import br.com.cronos.assinador.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class CertificadoService {
+public class CertificateService {
 	
-	public static ObservableList<CertificadoFromStore> carregarCertificadosInstalados() {
+	public static ObservableList<CertificateFromStore> loadInstalledCertificates() {
 
-		var certificados = buscarStoriesFromSystem().stream()
-				.map(Store::extrairCertificado)
+		var certs = searchStoresFromSystem().stream()
+				.map(Store::getInstanceCertificateFromStore)
 				.collect(Collectors.toList());
 		
-		certificados.add(0, new CertificadoFromStore(null, "Selecione..."));
+		certs.add(0, new CertificateFromStore(null, "Selecione..."));
 		
-		return FXCollections.observableArrayList(certificados);
+		return FXCollections.observableArrayList(certs);
 	}
 	
 	
-	public static Certificado carregarCertificadoA1(String path, String password) {
-		var certificadoA1 = new CertificadoA1(path, password);
+	public static CertificateData loadCertificateA1(String path, String password) {
+		var certificateA1 = new CertificateA1(path, password);
 		
 		Path arq = Path.of(path);
 		
@@ -57,13 +57,13 @@ public class CertificadoService {
 			return null;
 		}
 		
-		certificadoA1.setNome(arq.getFileName().toString());
+		certificateA1.setName(arq.getFileName().toString());
 		
 		try {
 			var keyStore = KeyStore.getInstance("PKCS12");
 			keyStore.load(Files.newInputStream(arq), password.toCharArray());
 
-			certificadoA1.setMapCertificateAndKey(getX509CertificateFromFile(keyStore, password));
+			certificateA1.setMapCertificateAndKey(getX509CertificateFromFile(keyStore, password));
 		} catch (KeyStoreException e) {
 			e.printStackTrace();
 			Utils.showErrorDialog("Erro ao carregar o certificado A1", "Não foi possível carregar o certificado informado.");
@@ -72,20 +72,20 @@ public class CertificadoService {
 			Utils.showErrorDialog("Erro ao carregar o certificado A1", "Favor verifique sua senha.", false);
 		}
 		
-		return certificadoA1;
+		return certificateA1;
 		
 	}
 	
-	public static Set<Store> buscarStoriesFromSystem() {
+	public static Set<Store> searchStoresFromSystem() {
 		
-		Set<Store> certificados = new HashSet<Store>();
+		Set<Store> stores = new HashSet<Store>();
 		
 		try {
 			KeyStore keyStore = getKeyStoreFromSystem();
 			keyStore.load(null, null);
 			
 			for (final Enumeration<String> e = keyStore.aliases(); e.hasMoreElements();) 
-				certificados.add(new Store(e.nextElement()));
+				stores.add(new Store(e.nextElement()));
 			
 		} catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
 			e.printStackTrace();
@@ -94,18 +94,18 @@ public class CertificadoService {
 			Utils.showErrorDialog("Erro ao carregar os certificados", e.getMessage());
 		}
 		
-		return certificados;
+		return stores;
 	}
 	
-	public static Map<X509Certificate, PrivateKey> getX509CertificateFromStore(CertificadoFromStore selectedCertificate) {
+	public static Map<X509Certificate, PrivateKey> getX509CertificateFromStore(CertificateFromStore selectedCertificate) {
 		var certificateKeyMap = new HashMap<X509Certificate, PrivateKey>();
 		 
 		try {
 			KeyStore keyStore = getKeyStoreFromSystem();
 			keyStore.load(null, null);
 			
-			final PrivateKey privateKey = (PrivateKey) keyStore.getKey(selectedCertificate.getNome(), null);
-			final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(selectedCertificate.getNome());
+			final PrivateKey privateKey = (PrivateKey) keyStore.getKey(selectedCertificate.getName(), null);
+			final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(selectedCertificate.getName());
 
 			certificateKeyMap.put(certificate, privateKey);
 			

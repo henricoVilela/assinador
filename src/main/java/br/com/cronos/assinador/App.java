@@ -18,7 +18,7 @@ public class App extends Application {
 
     @Override
     public void start(@SuppressWarnings("exports") Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 660, 500);
+        scene = new Scene(loadFXML("AssinadorLocal"), 660, 500);
        
         scene.getStylesheets().add(App.class.getResource("/styles/styles.css").toExternalForm());
         

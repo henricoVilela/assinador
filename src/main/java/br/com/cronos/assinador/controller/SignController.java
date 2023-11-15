@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-import br.com.cronos.assinador.model.Certificado;
-import br.com.cronos.assinador.model.CertificadoFromStore;
+import br.com.cronos.assinador.model.CertificateData;
+import br.com.cronos.assinador.model.CertificateFromStore;
 import br.com.cronos.assinador.model.FileInfo;
-import br.com.cronos.assinador.service.AssinaturaService;
-import br.com.cronos.assinador.service.CertificadoService;
+import br.com.cronos.assinador.service.CertificateService;
+import br.com.cronos.assinador.service.SignService;
+import br.com.cronos.assinador.service.SignService.FileSavingMode;
 import br.com.cronos.assinador.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -33,7 +34,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class AssinadorController implements Initializable {
+public class SignController implements Initializable {
 	
 	FileChooser fileChooser = new FileChooser();
 	
@@ -59,7 +60,7 @@ public class AssinadorController implements Initializable {
 	private Label labelNameCertificate;
 	
 	@FXML
-	private ComboBox<CertificadoFromStore> selectCertificates;
+	private ComboBox<CertificateFromStore> selectCertificates;
 	
 	@FXML
 	private TableView<FileInfo> tableOfFiles;
@@ -70,7 +71,7 @@ public class AssinadorController implements Initializable {
 	@FXML
 	private TableColumn<FileInfo, String> filePath;
 	
-	private Certificado selectedCertificate;
+	private CertificateData selectedCertificate;
 	
 	/*private Parent root;
 	private Scene scene;
@@ -80,7 +81,7 @@ public class AssinadorController implements Initializable {
     public void onChangeToCertsInstalled() {
     	
         if (selectCertificates.getItems().isEmpty()) 
-        	selectCertificates.setItems(CertificadoService.carregarCertificadosInstalados());
+        	selectCertificates.setItems(CertificateService.loadInstalledCertificates());
         
         selectCertificates.getSelectionModel().select(0);
         selectCertificates.setVisible(true);
@@ -96,13 +97,13 @@ public class AssinadorController implements Initializable {
     
     @FXML
     public void onSelectCertificate() {
-    	CertificadoFromStore selected = selectCertificates.getSelectionModel().getSelectedItem();
+    	CertificateFromStore selected = selectCertificates.getSelectionModel().getSelectedItem();
     	selectedCertificate = selected;
     	
-    	if (selected.getIdentificador() == null)
+    	if (selected.getIdentify() == null)
     		return;
     	
-    	var x509CertificateMap = CertificadoService.getX509CertificateFromStore(selected);
+    	var x509CertificateMap = CertificateService.getX509CertificateFromStore(selected);
     	
     	selectedCertificate.setMapCertificateAndKey(x509CertificateMap);
     	controllBtnSignDocuments();
@@ -112,13 +113,13 @@ public class AssinadorController implements Initializable {
 	@FXML
 	@SuppressWarnings("exports")
     public void onClickSelectCertificateA1(ActionEvent event) throws IOException {
-    	addPfxFilter();
+    	setPfxFilter();
     	
     	var selected = fileChooser.showOpenDialog(new Stage());
     	if (selected == null) 
     		return;
     	
-    	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/GetSenha.fxml"));
+    	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/GetPassword.fxml"));
     	Parent root = fxmlLoader.load();
     	
     	Stage stage = new Stage();
@@ -130,11 +131,11 @@ public class AssinadorController implements Initializable {
     	stage.initModality(Modality.APPLICATION_MODAL);
     	stage.showAndWait();
     	
-    	GetSenhaController controller = fxmlLoader.getController();
+    	GetPasswordController controller = fxmlLoader.getController();
     	String password = controller.getPasswordProvided();
     	
     	if (password != null) 
-    		selectedCertificate = CertificadoService.carregarCertificadoA1(selected.getPath(), password);
+    		selectedCertificate = CertificateService.loadCertificateA1(selected.getPath(), password);
         	
     	controllLabelCertificateA1();
     	controllBtnSignDocuments();
@@ -143,7 +144,7 @@ public class AssinadorController implements Initializable {
     
     @FXML
     public void onClickLoadFiles() {
-    	addPdfFilter();
+    	setPdfFilter();
     	
     	var selecteds = fileChooser.showOpenMultipleDialog(new Stage());
     	if (selecteds == null) 
@@ -162,8 +163,11 @@ public class AssinadorController implements Initializable {
     @FXML
     public void onClickRemoveFile() {
     	int selectedIndex = tableOfFiles.getSelectionModel().getSelectedIndex();
-    	if (selectedIndex < 0)
+    	if (selectedIndex < 0) {
+    		Utils.showWarnDialog("Ação Necessária", "Selecionde ao menos um arquivo para remoção");
     		return;
+    	}
+    		
     	
     	tableOfFiles.getItems().remove(selectedIndex);
     	
@@ -173,13 +177,13 @@ public class AssinadorController implements Initializable {
     
     @FXML
     public void onClickSignDocuments() {
-    	AssinaturaService.assinarDocumentos(tableOfFiles.getItems(), selectedCertificate);
+    	SignService.signDocuments(tableOfFiles.getItems(), selectedCertificate, FileSavingMode.LOCAL);
     }
 
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		addPdfFilter();
+		setPdfFilter();
     	
     	//Table of Files
     	fileName.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -191,7 +195,7 @@ public class AssinadorController implements Initializable {
 			selectedCertificate.getMapCertificateAndKey() != null && 
 			!selectedCertificate.getMapCertificateAndKey().isEmpty() ) {
 			
-    		labelNameCertificate.setText(selectedCertificate.getNome());
+    		labelNameCertificate.setText(selectedCertificate.getName());
     		labelNameCertificate.setVisible(true);
     		
     		return;
@@ -221,20 +225,23 @@ public class AssinadorController implements Initializable {
 			node.setDisable(true);
 	}
 	
-	private void addPfxFilter() {
-    	addFilter("Arquivos PFX (*.pfx)", "*.pfx");
+	private void setPfxFilter() {
+		fileChooser.setTitle("Escolha um arquivo .pfx");
+    	setFilter("Arquivos PFX (*.pfx)", "*.pfx");
 	}
 	
-	private void addPdfFilter() {
-    	addFilter("Arquivos PDF (*.pdf)", "*.pdf");
+	private void setPdfFilter() {
+		fileChooser.setTitle("Escolha um arquivo .pdf");
+    	setFilter("Arquivos PDF (*.pdf)", "*.pdf");
 	}
 	
-	private void addFilter(String title, String extension) {
+	private void setFilter(String title, String extension) {
 		ExtensionFilter filter = new ExtensionFilter(title, extension);
 		fileChooser.getExtensionFilters().clear();
     	fileChooser.getExtensionFilters().add(filter);
     	fileChooser.setSelectedExtensionFilter(filter);
 	}
+	
 
 
 

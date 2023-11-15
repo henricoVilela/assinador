@@ -1,19 +1,17 @@
 package br.com.cronos.assinador.model;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class Certificado {
+public abstract class CertificateData {
 	
-	private String identificador;
-	private String nome;
+	private String identify;
+	private String name;
 	private Map<X509Certificate, PrivateKey> mapCertificateAndKey;
-	private PublicKey publicKey;
-	
+
 	public Certificate getCertificate() {
 		final Set<Map.Entry<X509Certificate, PrivateKey>> set = mapCertificateAndKey.entrySet();
 		final X509Certificate cert = (X509Certificate) set.iterator().next().getKey();
@@ -28,37 +26,29 @@ public abstract class Certificado {
 	public void setMapCertificateAndKey(Map<X509Certificate, PrivateKey> mapCertificateAndKey) {
 		this.mapCertificateAndKey = mapCertificateAndKey;
 	}
-	
-	public PublicKey getPublicKey() {
-		return publicKey;
-	}
-	
-	public void setPublicKey(PublicKey publicKey) {
-		this.publicKey = publicKey;
-	}
-	
+
 	public PrivateKey getPrivateKey() {
 		return mapCertificateAndKey.entrySet().iterator().next().getValue();
 	}
 
-	public String getIdentificador() {
-		return identificador;
+	public String getIdentify() {
+		return identify;
 	}
 
-	public void setIdentificador(String identificador) {
-		this.identificador = identificador;
-	}
-	
-	public boolean hasIdentificador() {
-		return this.identificador != null;
+	public void setIdentify(String identify) {
+		this.identify = identify;
 	}
 
-	public String getNome() {
-		return nome;
+	public boolean hasIdentify() {
+		return this.identify != null;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String nome) {
+		this.name = nome;
 	}
 	
 	
