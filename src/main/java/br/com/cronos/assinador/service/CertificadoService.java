@@ -23,7 +23,7 @@ import br.com.cronos.assinador.model.Certificado;
 import br.com.cronos.assinador.model.CertificadoA1;
 import br.com.cronos.assinador.model.CertificadoFromStore;
 import br.com.cronos.assinador.model.Store;
-import br.com.cronos.assinador.util.Contants;
+import br.com.cronos.assinador.util.Constants;
 import br.com.cronos.assinador.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -149,18 +149,18 @@ public class CertificadoService {
 
 	private static KeyStore getKeyStoreFromSystem() throws KeyStoreException, NoSuchProviderException, StoreException {
 		
-		var isWindows = Contants.SYSTEM_NAME.indexOf(Contants.WINDOWS) >= 0;
-		var isMacOs = Contants.SYSTEM_NAME.indexOf(Contants.MAC) >= 0;
+		var isWindows = Constants.SYSTEM_NAME.indexOf(Constants.WINDOWS) >= 0;
+		var isMacOs = Constants.SYSTEM_NAME.indexOf(Constants.MAC) >= 0;
 		
 		KeyStore keyStore = null;
 		
 		if (isWindows)
-			keyStore = KeyStore.getInstance(Contants.WINDOWS_KEY_STORE_TYPE, Contants.WINDOWS_KEY_STORE_PROVIDER);
+			keyStore = KeyStore.getInstance(Constants.WINDOWS_KEY_STORE_TYPE, Constants.WINDOWS_KEY_STORE_PROVIDER);
 		else if (isMacOs)
-			keyStore = KeyStore.getInstance(Contants.MAC_KEY_STORE_TYPE, Contants.MAC_KEY_STORE_PROVIDER);
+			keyStore = KeyStore.getInstance(Constants.MAC_KEY_STORE_TYPE, Constants.MAC_KEY_STORE_PROVIDER);
 		
 		if (keyStore == null) 
-			throw new StoreException("Sistema operacional" + Contants.SYSTEM_NAME + " não suportado!");
+			throw new StoreException("Sistema operacional" + Constants.SYSTEM_NAME + " não suportado!");
 
 		return keyStore;
 	}

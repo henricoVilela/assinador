@@ -137,6 +137,7 @@ public class AssinadorController implements Initializable {
     		selectedCertificate = CertificadoService.carregarCertificadoA1(selected.getPath(), password);
         	
     	controllLabelCertificateA1();
+    	controllBtnSignDocuments();
     	
     }
     
@@ -161,6 +162,9 @@ public class AssinadorController implements Initializable {
     @FXML
     public void onClickRemoveFile() {
     	int selectedIndex = tableOfFiles.getSelectionModel().getSelectedIndex();
+    	if (selectedIndex < 0)
+    		return;
+    	
     	tableOfFiles.getItems().remove(selectedIndex);
     	
     	if (tableOfFiles.getItems().isEmpty()) 

@@ -4,11 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.RSAPrivateKeySpec;
 import java.util.List;
 
 import com.itextpdf.text.DocumentException;
@@ -25,24 +23,30 @@ import com.itextpdf.text.pdf.security.MakeSignature;
 import com.itextpdf.text.pdf.security.MakeSignature.CryptoStandard;
 import com.itextpdf.text.pdf.security.PrivateKeySignature;
 
+import br.com.cronos.assinador.exceptions.StoreException;
 import br.com.cronos.assinador.model.Certificado;
 import br.com.cronos.assinador.model.FileInfo;
+import br.com.cronos.assinador.util.Constants;
 import br.com.cronos.assinador.util.Utils;
 
 public class AssinaturaService {
 
 	public static void assinarDocumentos(List<FileInfo> files, Certificado cert) {
-		gerarHashDosArquivos(files, cert);
+		try {
+			gerarHashDosArquivos(files, cert);
+		} catch (StoreException e) {
+			Utils.showErrorDialog("Erro ao assinar os documentos", e.getMessage());
+		}
 	}
 
-	private static void gerarHashDosArquivos(List<FileInfo> files, Certificado cert) {
-
+	private static void gerarHashDosArquivos(List<FileInfo> files, Certificado cert) throws StoreException {
+		int INITIAL_SIZE = 32;
 		byte[] bytesOfFile = null;
 		for (FileInfo fileInfo : files) {
 			bytesOfFile = Utils.convertFileToBytes(fileInfo.getFile());
 			var baos = getPdfAssinado(bytesOfFile, cert.getCertificate(), cert.getPrivateKey());
 			
-			if (baos.size() > 32) {
+			if (baos.size() > INITIAL_SIZE) {
 				String caminhoArquivo = "E:\\var\\arquivos_de_log\\"+fileInfo.getName();
 				try (FileOutputStream fos = new FileOutputStream(caminhoArquivo)) {
 		            fos.write(baos.toByteArray());
@@ -54,7 +58,7 @@ public class AssinaturaService {
 		}
 	}
 
-	private static ByteArrayOutputStream getPdfAssinado(byte[] bytes, Certificate certificate, PrivateKey privateKey) {
+	private static ByteArrayOutputStream getPdfAssinado(byte[] bytes, Certificate certificate, PrivateKey privateKey) throws StoreException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		try {
@@ -79,16 +83,16 @@ public class AssinaturaService {
 			signature.setContact(signatureAppearance.getContact());
 			signature.setDate(new PdfDate(signatureAppearance.getSignDate()));
 			
-			
 			signatureAppearance.setCryptoDictionary(signature);
-			
-			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-			RSAPrivateKeySpec rsaPrivateKeySpec = keyFactory.getKeySpec(privateKey, RSAPrivateKeySpec.class);
-			RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) keyFactory.generatePrivate(rsaPrivateKeySpec);
 
+			ExternalSignature externalSignature = null;
+			if (privateKey instanceof RSAPrivateKey) 
+				externalSignature = new PrivateKeySignature((RSAPrivateKey) privateKey, "SHA-256", "BC");
+			else
+				externalSignature = new PrivateKeySignature(privateKey, "SHA-256", Constants.getKeyStoreProvider());
 			
 			ExternalDigest digest = new BouncyCastleDigest();
-	        ExternalSignature externalSignature = new PrivateKeySignature(rsaPrivateKey, "SHA-256", "BC");
+	        
 	        MakeSignature.signDetached(signatureAppearance, digest, externalSignature, new Certificate[]{certificate}, null, null, null, 0, CryptoStandard.CMS);
 
 	        stamper.close();
