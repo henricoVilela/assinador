@@ -72,10 +72,8 @@ public class SignController implements Initializable {
 	private TableColumn<FileInfo, String> filePath;
 	
 	private CertificateData selectedCertificate;
-	
-	/*private Parent root;
-	private Scene scene;
-	private Stage stage;*/
+
+	private Stage waitDialog = null;
 	
     @FXML
     public void onChangeToCertsInstalled() {
@@ -86,7 +84,7 @@ public class SignController implements Initializable {
         selectCertificates.getSelectionModel().select(0);
         selectCertificates.setVisible(true);
         btnSelectFile.setVisible(false);
-        
+
     }
     
     @FXML
@@ -184,7 +182,8 @@ public class SignController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		setPdfFilter();
-    	
+		setStageShowWaitScream();
+		
     	//Table of Files
     	fileName.setCellValueFactory(new PropertyValueFactory<>("name"));
     	filePath.setCellValueFactory(new PropertyValueFactory<>("path"));
@@ -242,7 +241,33 @@ public class SignController implements Initializable {
     	fileChooser.setSelectedExtensionFilter(filter);
 	}
 	
-
-
-
+	/**
+	 * Criar um stage com o dialog de espera de processamento
+	 * para usar: waitDialog.show() exibe o modal e waitDialog.close() fecha o modal
+	 */
+	private void setStageShowWaitScream() {
+		
+		if (waitDialog != null)
+			return;
+		
+		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/WaitScream.fxml"));
+		Stage stage = new Stage();
+		
+		try {
+			Parent root = fxmlLoader.load();
+	    	
+	    	stage.setScene(new Scene(root));
+	    	stage.setTitle("");
+	    	stage.setResizable(false);
+	    	stage.getIcons().add(Utils.getIconInfo());
+	    	stage.initModality(Modality.APPLICATION_MODAL);
+	    	stage.setOnCloseRequest(event -> event.consume());
+	    	
+		} catch (IOException e) {
+			System.err.println("Erro ao tentar carregar stage da tela de espera");
+		}
+    	
+		waitDialog = stage;
+	}
+	
 }
