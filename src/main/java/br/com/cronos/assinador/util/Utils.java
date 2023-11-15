@@ -57,12 +57,28 @@ public class Utils {
         alert.showAndWait();
     }
 	
+	/**
+	 * Exibi alerta de erro e encerra o programa ao fechar
+	 * @param header
+	 * @param content
+	 */
 	public static void showInfoDialog(String header, String content) {
+		showInfoDialog(header, content, true);
+    }
+	
+	public static void showInfoDialog(String header, String content, boolean exitProgram) {
         Alert alert = new Alert(AlertType.INFORMATION);
+        
+        setIconAlert(alert, getIconInfo());
         
         alert.setTitle("Informação");
         alert.setHeaderText(header);
         alert.setContentText(content);
+        
+        if (exitProgram)
+	        alert.setOnCloseRequest(event -> {
+	            System.exit(0);
+	        });
         
         alert.showAndWait();
     }
@@ -74,19 +90,27 @@ public class Utils {
 	}
 	
 	public static Image getApplicationIcon() {
-    	return new Image(Utils.class.getResourceAsStream("/icons/app_icon.png"));
+		return getIcon("app_icon.png");
     }
 	
 	public static Image getIconDialogPassword() {
-    	return new Image(Utils.class.getResourceAsStream("/icons/privacidade.png"));
+		return getIcon("privacidade.png");
     }
 	
 	public static Image getIconWarn() {
-    	return new Image(Utils.class.getResourceAsStream("/icons/alerta.png"));
+		return getIcon("alerta.png");
     }
 	
 	public static Image getIconError() {
-    	return new Image(Utils.class.getResourceAsStream("/icons/erro.png"));
+    	return getIcon("erro.png");
+    }
+	
+	public static Image getIconInfo() {
+    	return getIcon("info.png");
+    }
+	
+	public static Image getIcon(String iconName) {
+    	return new Image(Utils.class.getResourceAsStream("/icons/"+iconName));
     }
 	
 	public static byte[] convertFileToBytes(File file) {

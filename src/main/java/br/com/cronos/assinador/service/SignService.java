@@ -58,7 +58,12 @@ public class SignService {
 			
 		} catch (StoreException e) {
 			Utils.showErrorDialog("Erro ao assinar os documentos", e.getMessage());
+			
+			return;
 		}
+		
+		
+		
 	}
 
 	private static void signDocumentsAndSave(List<FileInfo> files, CertificateData cert) throws StoreException {
@@ -69,12 +74,13 @@ public class SignService {
 			var baos = getPdfAssinado(bytesOfFile, cert.getCertificate(), cert.getPrivateKey());
 			
 			if (baos.size() > INITIAL_SIZE) {
-				//String caminhoArquivo = "E:\\var\\arquivos_de_log\\"+fileInfo.getName();
 				try (FileOutputStream fos = new FileOutputStream(fileInfo.getPath())) {
 		            fos.write(baos.toByteArray());
-		            System.out.println("Arquivo salvo com sucesso em: " + fileInfo.getPath());
+		            
+		            Utils.showInfoDialog("Assinaturas Realizadas", "Os arquivos foram assinados com sucesso");
 		        } catch (IOException e) {
 		            e.printStackTrace();
+		            Utils.showErrorDialog("Erro ao atualizar documento", "Não foi possível gravar o documeto " + fileInfo.getName()); 
 		        }
 			}
 		}
