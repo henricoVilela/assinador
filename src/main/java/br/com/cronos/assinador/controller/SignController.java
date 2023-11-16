@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 import br.com.cronos.assinador.model.CertificateData;
 import br.com.cronos.assinador.model.CertificateFromStore;
 import br.com.cronos.assinador.model.FileInfo;
+import br.com.cronos.assinador.model.SignParams;
 import br.com.cronos.assinador.service.CertificateService;
+import br.com.cronos.assinador.service.LoadFilesFromService;
 import br.com.cronos.assinador.service.SignService;
 import br.com.cronos.assinador.service.SignService.FileSavingMode;
 import br.com.cronos.assinador.util.Utils;
@@ -38,6 +40,10 @@ public class SignController implements Initializable {
 	
 	FileChooser fileChooser = new FileChooser();
 	
+	private CertificateData selectedCertificate;
+	private Stage waitDialog;
+	private SignParams signParams;
+	
 	@FXML
     private AnchorPane anchorPane;
 	
@@ -52,6 +58,9 @@ public class SignController implements Initializable {
 	
 	@FXML
 	private Button btnRemoveFile;
+	
+	@FXML
+	private Button btnLoadFiles;
 	
 	@FXML
 	private Button btnSingDocuments;
@@ -71,9 +80,7 @@ public class SignController implements Initializable {
 	@FXML
 	private TableColumn<FileInfo, String> filePath;
 	
-	private CertificateData selectedCertificate;
-
-	private Stage waitDialog = null;
+	
 	
     @FXML
     public void onChangeToCertsInstalled() {
@@ -174,7 +181,10 @@ public class SignController implements Initializable {
     
     @FXML
     public void onClickSignDocuments() {
-    	SignService.signDocuments(tableOfFiles.getItems(), selectedCertificate, FileSavingMode.LOCAL);
+    	
+    	var fileSavingMode = (this.signParams == null) ? FileSavingMode.LOCAL : FileSavingMode.SEND_TO_SERVICE;
+    	
+    	SignService.signDocuments(tableOfFiles.getItems(), selectedCertificate, fileSavingMode);
     }
 
 
@@ -186,6 +196,7 @@ public class SignController implements Initializable {
     	//Table of Files
     	fileName.setCellValueFactory(new PropertyValueFactory<>("name"));
     	filePath.setCellValueFactory(new PropertyValueFactory<>("path"));
+    	
 	}
 	
 	private void controllLabelCertificateA1() {
@@ -268,5 +279,22 @@ public class SignController implements Initializable {
     	
 		waitDialog = stage;
 	}
+	
+	public void loadTableFiles() {
+		if (this.signParams != null) {
+			disable(btnLoadFiles);
+    		tableOfFiles.setItems(LoadFilesFromService.loadFiles(signParams));
+    	}
+	}
+
+	public SignParams getSignParams() {
+		return signParams;
+	}
+
+	public void setSignParams(SignParams signParams) {
+		this.signParams = signParams;
+	}
+	
+	
 	
 }

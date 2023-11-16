@@ -71,7 +71,7 @@
                   <Separator prefWidth="200.0" />
                   <HBox prefWidth="200.0">
                      <children>
-                        <Button mnemonicParsing="false" onMouseClicked="#onClickLoadFiles" text="Adicionar Arquivo">
+                        <Button fx:id="btnLoadFiles" mnemonicParsing="false" onMouseClicked="#onClickLoadFiles" text="Adicionar Arquivo">
                            <graphic>
                               <ImageView fitHeight="81.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                  <image>

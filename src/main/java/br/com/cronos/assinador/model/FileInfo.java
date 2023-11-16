@@ -8,7 +8,7 @@ public class FileInfo {
 	private String path;
 	private String hash;
 	private File file;
-	
+	private byte[] bytes;
 
 	public FileInfo(File file) {
 		super();
@@ -42,6 +42,14 @@ public class FileInfo {
 
 	public void setHash(String hash) {
 		this.hash = hash;
+	}
+
+	public byte[] getBytes() {
+		return bytes;
+	}
+
+	public void setBytes(byte[] bytes) {
+		this.bytes = bytes;
 	}
 
 }

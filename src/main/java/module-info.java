@@ -3,6 +3,9 @@ module br.com.cronos.assinador {
     requires javafx.fxml;
     requires itextpdf;
 	requires bcprov.jdk15on;
+	requires com.fasterxml.jackson.databind;
+	requires spring.web;
+	requires spring.core;
     
     //opens br.com.cronos.assinador to javafx.fxml, javafx.graphics;
     //opens br.com.cronos.assinador.controller to javafx.fxml, javafx.graphics;

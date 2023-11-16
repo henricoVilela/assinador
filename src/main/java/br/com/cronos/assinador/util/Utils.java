@@ -5,12 +5,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.PdfReader;
 
+import br.com.cronos.assinador.model.SignParams;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
@@ -139,5 +143,21 @@ public class Utils {
         
     }
 
+	public static SignParams getInstanceSignParamsFromArgument(String argBase64Encoded) {
+
+		var jsonDecoded = new String(Base64.getDecoder().decode(argBase64Encoded));
+		
+        ObjectMapper objectMapper = new ObjectMapper();
+        SignParams signParams = null;
+
+		try {
+			signParams = objectMapper.readValue(jsonDecoded, SignParams.class);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			showErrorDialog("Erro ao ler JSON", "Não foi possível desserialziar o json: "+jsonDecoded);
+		}
+        
+        return signParams;
+	}
 	
 }

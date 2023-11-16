@@ -2,6 +2,7 @@ package br.com.cronos.assinador;
 
 import java.io.IOException;
 
+import br.com.cronos.assinador.controller.SignController;
 import br.com.cronos.assinador.util.Utils;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,10 +19,6 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException, ClassNotFoundException {
     	
-    	//String caminhoPagina = "/resources/FilmeOverview.fxml";
-    	System.out.println();
-    	//var URL = App.class.getResource("/fxml/AssinadorLocal.fxml");
-    	
     	var URL = Class.forName("br.com.cronos.assinador.App").getResource("/fxml/AssinadorLocal.fxml");
     	
     	System.out.println(URL);
@@ -34,16 +31,27 @@ public class App extends Application {
         stage.setTitle("Assinador Digital");
         stage.setScene(scene);
         stage.show();
+        
+        var arguments = getParameters().getRaw();
+        
+        if (arguments.isEmpty())
+        	return;
+        
+        if (arguments.size() > 1)
+        	Utils.showErrorDialog("Execução inválida", "A aplicação espera no máximo um argumento de linha de comando.");
+
+        SignController controller = fxmlLoader.getController();
+        controller.setSignParams(Utils.getInstanceSignParamsFromArgument(arguments.get(0)));
+        controller.loadTableFiles();
     }
 
     
     public static void main(String[] args) {
-    	
     	for (String arg : args) {
     		System.out.println("arg: "+arg);
 		}
-    	
-        launch();
+
+        launch(args);
     }
 
 }
