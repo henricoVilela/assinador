@@ -109,7 +109,6 @@ public class SignController implements Initializable {
     
     
 	@FXML
-	@SuppressWarnings("exports")
     public void onClickSelectCertificateA1(ActionEvent event) throws IOException {
     	setPfxFilter();
     	
