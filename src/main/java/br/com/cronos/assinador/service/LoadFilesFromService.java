@@ -51,6 +51,8 @@ public class LoadFilesFromService {
 	            if (Objects.nonNull(resource)) {
 	            	FileInfo file = new FileInfo(getFileNameFromResponse(response), "...");
 	            	file.setBytes(resource.getByteArray());
+	            	file.setUri(URI);
+	            	
 	            	return file;
 	            }
 

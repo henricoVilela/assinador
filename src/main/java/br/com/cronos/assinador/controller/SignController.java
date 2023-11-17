@@ -193,6 +193,8 @@ public class SignController implements Initializable {
 		setPdfFilter();
 		setStageShowWaitScream();
 		
+		selectCertificates.setItems(CertificateService.loadInstalledCertificates());
+		
     	//Table of Files
     	fileName.setCellValueFactory(new PropertyValueFactory<>("name"));
     	filePath.setCellValueFactory(new PropertyValueFactory<>("path"));

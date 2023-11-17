@@ -8,7 +8,12 @@ public class FileInfo {
 	private String path;
 	private String hash;
 	private File file;
+	
+	/**
+	 * As duas propriedades são usadas para assinaturas integradas com servicos web
+	 */
 	private byte[] bytes;
+	private String uri;
 
 	public FileInfo(File file) {
 		super();
@@ -50,6 +55,14 @@ public class FileInfo {
 
 	public void setBytes(byte[] bytes) {
 		this.bytes = bytes;
+	}
+
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
 	}
 
 }

@@ -49,7 +49,7 @@ public class SignService {
 					signDocumentsAndSave(files, cert);
 					break;
 				case SEND_TO_SERVICE:
-					
+					signDocumentsAndSend(files, cert);
 					break;
 			default:
 				break;
@@ -61,8 +61,6 @@ public class SignService {
 			
 			return;
 		}
-		
-		
 		
 	}
 
@@ -76,15 +74,29 @@ public class SignService {
 			if (baos.size() > INITIAL_SIZE) {
 				try (FileOutputStream fos = new FileOutputStream(fileInfo.getPath())) {
 		            fos.write(baos.toByteArray());
-		            
-		            Utils.showInfoDialog("Assinaturas Realizadas", "Os arquivos foram assinados com sucesso");
 		        } catch (IOException e) {
 		            e.printStackTrace();
-		            Utils.showErrorDialog("Erro ao atualizar documento", "Não foi possível gravar o documeto " + fileInfo.getName()); 
+		            Utils.showErrorDialog("Erro ao atualizar documento", "Não foi possível gravar o documeto " + fileInfo.getName(), false); 
 		        }
 			}
 		}
+		
+		Utils.showInfoDialog("Assinaturas Realizadas", "Os arquivos foram assinados com sucesso");
 	}
+	
+	private static void signDocumentsAndSend(List<FileInfo> files, CertificateData cert) throws StoreException {
+		int INITIAL_SIZE = 32;
+		for (FileInfo fileInfo : files) {
+			var baos = getPdfAssinado(fileInfo.getBytes(), cert.getCertificate(), cert.getPrivateKey());
+			
+			if (baos.size() > INITIAL_SIZE) {
+				fileInfo.setBytes(baos.toByteArray());
+				
+				SendFilesToService.sendFile(fileInfo);
+			}
+		}
+	}
+
 
 	private static ByteArrayOutputStream getPdfAssinado(byte[] bytes, Certificate certificate, PrivateKey privateKey) throws StoreException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
