@@ -9,11 +9,10 @@ import java.util.stream.Collectors;
 import br.com.cronos.assinador.model.CertificateData;
 import br.com.cronos.assinador.model.CertificateFromStore;
 import br.com.cronos.assinador.model.FileInfo;
-import br.com.cronos.assinador.model.SignParams;
+import br.com.cronos.assinador.model.strategy.SavingMode;
+import br.com.cronos.assinador.model.strategy.SignerFiles;
+import br.com.cronos.assinador.model.strategy.SignerFilesFactory;
 import br.com.cronos.assinador.service.CertificateService;
-import br.com.cronos.assinador.service.LoadFilesFromService;
-import br.com.cronos.assinador.service.SignService;
-import br.com.cronos.assinador.service.SignService.FileSavingMode;
 import br.com.cronos.assinador.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -42,7 +41,9 @@ public class SignController implements Initializable {
 	
 	private CertificateData selectedCertificate;
 	private Stage waitDialog;
-	private SignParams signParams;
+	private SavingMode savingMode;
+	private String argumentBase64;
+	private SignerFiles signerService;
 	
 	@FXML
     private AnchorPane anchorPane;
@@ -79,8 +80,6 @@ public class SignController implements Initializable {
 	
 	@FXML
 	private TableColumn<FileInfo, String> filePath;
-	
-	
 	
     @FXML
     public void onChangeToCertsInstalled() {
@@ -181,10 +180,7 @@ public class SignController implements Initializable {
     
     @FXML
     public void onClickSignDocuments() {
-    	
-    	var fileSavingMode = (this.signParams == null) ? FileSavingMode.LOCAL : FileSavingMode.SEND_TO_SERVICE;
-    	
-    	SignService.signDocuments(tableOfFiles.getItems(), selectedCertificate, fileSavingMode);
+    	signerService.signDocuments(tableOfFiles.getItems(), selectedCertificate);
     }
 
 
@@ -283,20 +279,35 @@ public class SignController implements Initializable {
 	}
 	
 	public void loadTableFiles() {
-		if (this.signParams != null) {
+		if (this.signerService != null && this.argumentBase64 != null) {
 			disable(btnLoadFiles);
-    		tableOfFiles.setItems(LoadFilesFromService.loadFiles(signParams));
+    		tableOfFiles.setItems(signerService.loadFiles(argumentBase64));
     	}
 	}
-
-	public SignParams getSignParams() {
-		return signParams;
+	
+	private void setInstaceSignerService() {
+		SignerFilesFactory signerFilesFactory = new SignerFilesFactory();
+		this.signerService = signerFilesFactory.getInstance(savingMode);
+		
 	}
 
-	public void setSignParams(SignParams signParams) {
-		this.signParams = signParams;
+	public SavingMode getSavingMode() {
+		return savingMode;
 	}
-	
-	
+
+	public void setSavingMode(SavingMode savingMode) {
+		this.savingMode = savingMode;
+		
+		if (this.signerService == null)
+			setInstaceSignerService();
+	}
+
+	public String getArgumentBase64() {
+		return argumentBase64;
+	}
+
+	public void setArgumentBase64(String argumentBase64) {
+		this.argumentBase64 = argumentBase64;
+	}
 	
 }

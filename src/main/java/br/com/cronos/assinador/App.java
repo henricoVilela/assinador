@@ -1,8 +1,11 @@
 package br.com.cronos.assinador;
 
 import java.io.IOException;
+import java.util.Map;
 
 import br.com.cronos.assinador.controller.SignController;
+import br.com.cronos.assinador.model.strategy.SavingMode;
+import br.com.cronos.assinador.util.Constants;
 import br.com.cronos.assinador.util.Utils;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -21,10 +24,8 @@ public class App extends Application {
     	
     	var URL = Class.forName("br.com.cronos.assinador.App").getResource("/fxml/AssinadorLocal.fxml");
     	
-    	System.out.println(URL);
-    	
     	FXMLLoader fxmlLoader = new FXMLLoader(URL);
-        scene = new Scene(fxmlLoader.load(), 660, 500);
+        scene = new Scene(fxmlLoader.load(), 700, 500);
         scene.getStylesheets().add(App.class.getResource("/styles/styles.css").toExternalForm());
         
         stage.getIcons().add(Utils.getApplicationIcon());
@@ -32,25 +33,56 @@ public class App extends Application {
         stage.setScene(scene);
         stage.show();
         
-        var arguments = getParameters().getRaw();
-        
-        if (arguments.isEmpty())
-        	return;
-        
-        if (arguments.size() > 1)
-        	Utils.showErrorDialog("Execução inválida", "A aplicação espera no máximo um argumento de linha de comando.");
-
         SignController controller = fxmlLoader.getController();
-        controller.setSignParams(Utils.getInstanceSignParamsFromArgument(arguments.get(0)));
-        controller.loadTableFiles();
+        
+        var arguments = getParameters().getNamed();
+        if (arguments.isEmpty()) {
+        	controller.setSavingMode(SavingMode.LOCAL);
+        	return;
+        }
+        	
+        validateExec(arguments);
+       
+        if (arguments.containsKey(Constants.ARG_DATA_FROM_SERVICE)) {
+        	
+        	controller.setSavingMode(SavingMode.SEND_TO_SERVICE);
+        	controller.setArgumentBase64(arguments.get(Constants.ARG_DATA_FROM_SERVICE));
+        	controller.loadTableFiles();
+        	
+            return;
+        }
+        
+        if (arguments.containsKey(Constants.ARG_DATA_FROM_PATHS)) {
+        	
+        	controller.setSavingMode(SavingMode.SAVE_TO_PATH);
+        	controller.setArgumentBase64(arguments.get(Constants.ARG_DATA_FROM_PATHS));
+        	controller.loadTableFiles();
+        	
+            return;
+        }
+
+        
+    }
+    
+    private static void validateExec(Map<String, String>  arguments) {
+    	
+    	var isFromService = arguments.containsKey(Constants.ARG_DATA_FROM_SERVICE);
+    	var isFromPaths = arguments.containsKey(Constants.ARG_DATA_FROM_PATHS);
+    	
+    	if (isFromService && isFromPaths)
+    		Utils.showErrorDialog("Execução inválida", "A aplicação não aceita duas forma de execução ao mesmo tempo.");
+    	
+    	if (!arguments.isEmpty() && !isFromPaths && !isFromService)
+    		Utils.showErrorDialog("Execução inválida", "A aplicação não aceita os argumentos informados.");
+    	
     }
 
     
     public static void main(String[] args) {
-    	for (String arg : args) {
+    	
+    	for (String arg : args) 
     		System.out.println("arg: "+arg);
-		}
-
+		
         launch(args);
     }
 

@@ -11,19 +11,22 @@ import org.springframework.web.client.RestTemplate;
 
 import br.com.cronos.assinador.exceptions.LoadPdfFromServiceException;
 import br.com.cronos.assinador.model.FileInfo;
-import br.com.cronos.assinador.model.SignParams;
+import br.com.cronos.assinador.model.SignParamsFromService;
 import br.com.cronos.assinador.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class LoadFilesFromService {
 
-	public static ObservableList<FileInfo> loadFiles(SignParams params) {
+	public static ObservableList<FileInfo> loadFiles(SignParamsFromService params) {
 		List<FileInfo> files = new ArrayList<>();
 		
 		for (var param : params.getParametros()) {
-			if (param.existeUrl()) {
-				var URI = String.format(param.getUrl(), param.getCodigo());
+			if (param.existeUrl() || params.existeUrlPrincipal()) {
+				
+				var url = (param.existeUrl()) ? param.getUrl() : params.getUrlPrincipal();
+				
+				var URI = String.format(url, param.getCodigo());
 				
 				try {
 					files.add(buscarPdf(URI));
@@ -79,8 +82,9 @@ public class LoadFilesFromService {
     	if (contentDisposition != null && !contentDisposition.isEmpty()) {
     		String content = " " + contentDisposition.get(0);
     		String[] values = content.split("filename=");
-    		if (values.length > 1)
-    			fileName = values[1] + ".pdf";
+    		if (values.length > 1) 
+    			fileName = values[1].contains(".pdf") ? values[1] : values[1] + ".pdf";
+
     	}
     	
     	return fileName;

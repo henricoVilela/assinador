@@ -6,6 +6,8 @@ public class FileInfo {
 	
 	private String name;
 	private String path;
+	private String pathWrite;
+	
 	private String hash;
 	private File file;
 	
@@ -27,6 +29,13 @@ public class FileInfo {
 		this.name = name;
 		this.path = path;
 		
+	}
+	
+	public FileInfo(String name, String path, String pathWrite) {
+		super();
+		this.name = name;
+		this.path = path;
+		this.pathWrite = pathWrite;
 	}
 
 	public String getName() {
@@ -65,4 +74,11 @@ public class FileInfo {
 		this.uri = uri;
 	}
 
+	public String getPathWrite() {
+		return pathWrite;
+	}
+
+	public boolean hasPathWrite() {
+		return pathWrite != null && !pathWrite.isBlank();
+	}
 }

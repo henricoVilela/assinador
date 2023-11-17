@@ -3,7 +3,7 @@ package br.com.cronos.assinador.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SignParams {
+public class SignParamsFromService {
 	
 	private String urlPrincipal;
 	private List<Params> parametros = new ArrayList<>();

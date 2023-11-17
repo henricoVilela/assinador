@@ -15,6 +15,8 @@ public abstract class Constants {
 	public static final String MAC_KEY_STORE_TYPE = "KeychainStore";
 	public static final String MAC_KEY_STORE_PROVIDER = "Apple";
 	
+	public static final String ARG_DATA_FROM_SERVICE = "dataservice";
+	public static final String ARG_DATA_FROM_PATHS = "datapath";
 	
 	public static String getKeyStoreProvider() throws StoreException {
 		var isWindows = Constants.SYSTEM_NAME.indexOf(Constants.WINDOWS) >= 0;
