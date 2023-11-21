@@ -12,6 +12,7 @@ bin/
 \.settings
 \.springBeans
 \.sts4-cache
+.settings/
 *.log
 *.gz
 
