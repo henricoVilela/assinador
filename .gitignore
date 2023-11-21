@@ -2,15 +2,16 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+bin/
 
 ### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+\.apt_generated
+\.classpath
+\.factorypath
+\.project
+\.settings
+\.springBeans
+\.sts4-cache
 *.log
 *.gz
 
