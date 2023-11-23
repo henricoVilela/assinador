@@ -1,5 +1,7 @@
 package br.com.cronos.assinador.service;
 
+import java.util.Map;
+
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,14 +20,17 @@ import br.com.cronos.assinador.util.Utils;
 
 public class SendFilesToService {
 	
-	public static void sendFile(FileInfo file) {
+	public static void sendFile(FileInfo file, Map<String, String> paramsHeaders) {
 		
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 
 	        HttpHeaders headers = new HttpHeaders();
 	        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
+	       
+	        for (Map.Entry<String, String> header : paramsHeaders.entrySet()) 
+				headers.add(header.getKey(), header.getValue());
+	        
 	        // Construa o corpo da requisição
 	        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 	        body.add("arquivo", new ByteArrayResource(file.getBytes()) {

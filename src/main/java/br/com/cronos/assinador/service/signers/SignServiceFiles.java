@@ -7,6 +7,7 @@ import java.util.List;
 import br.com.cronos.assinador.exceptions.StoreException;
 import br.com.cronos.assinador.model.CertificateData;
 import br.com.cronos.assinador.model.FileInfo;
+import br.com.cronos.assinador.model.SignParamsFromService;
 import br.com.cronos.assinador.model.strategy.SavingMode;
 import br.com.cronos.assinador.model.strategy.SignerFiles;
 import br.com.cronos.assinador.service.LoadFilesFromService;
@@ -16,6 +17,8 @@ import javafx.collections.ObservableList;
 
 public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 
+	private SignParamsFromService params;
+	
 	@Override
 	public SavingMode getInstanceType() {
 		return SavingMode.SEND_TO_SERVICE;
@@ -32,7 +35,7 @@ public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 				
 				if (baos.size() > INITIAL_SIZE) {
 					fileInfo.setBytes(baos.toByteArray());
-					SendFilesToService.sendFile(fileInfo);
+					SendFilesToService.sendFile(fileInfo, params.getHeaders());
 				}
 				
 			} catch (StoreException e) {
@@ -58,6 +61,9 @@ public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 	@Override
 	public ObservableList<FileInfo> loadFiles(String argumentBase64) {
 		var params = Utils.getSignParamsFromService(argumentBase64);
+		
+		this.params = params;
+		
 		return LoadFilesFromService.loadFiles(params);
 	}
 
