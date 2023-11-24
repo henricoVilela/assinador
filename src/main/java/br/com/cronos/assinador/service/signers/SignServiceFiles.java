@@ -2,7 +2,9 @@ package br.com.cronos.assinador.service.signers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import br.com.cronos.assinador.exceptions.StoreException;
 import br.com.cronos.assinador.model.CertificateData;
@@ -28,6 +30,10 @@ public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 	public void signDocuments(List<FileInfo> files, CertificateData cert) {
 		int INITIAL_SIZE = 32;
 		ByteArrayOutputStream baos = null;
+		
+		List<String> filesNotSent = new ArrayList<String>();
+		List<String> filesSent = new ArrayList<String>();
+		
 		for (FileInfo fileInfo : files) {
 			
 			try {
@@ -35,7 +41,12 @@ public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 				
 				if (baos.size() > INITIAL_SIZE) {
 					fileInfo.setBytes(baos.toByteArray());
-					SendFilesToService.sendFile(fileInfo, params.getHeaders());
+					var sent = SendFilesToService.sendFile(fileInfo, params.getHeaders());
+					
+					if (sent)
+						filesSent.add(fileInfo.getName());
+					else
+						filesNotSent.add(fileInfo.getName());
 				}
 				
 			} catch (StoreException e) {
@@ -54,8 +65,24 @@ public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 			}
 		}
 		
-		Utils.showInfoDialog("Assinaturas Realizadas", "Os arquivos foram assinados com sucesso");
+		notificar(filesSent, filesNotSent);
+	}
+	
+	private void notificar(List<String> filesSent, List<String> filesNotSent) {
+		if (filesNotSent.isEmpty()) 
+			Utils.showInfoDialog("Assinaturas Realizadas", "Todos os arquivos foram assinados e enviado com sucesso");
 		
+		if (!filesNotSent.isEmpty()) {
+			var filesNotSentUri = filesNotSent.stream().collect(Collectors.joining(" \n"));
+			Utils.showErrorDialog("Erro ao enviar o arquivo", "Não foi possivel enviar os arquivos: \n" + filesNotSentUri, false);
+			filesNotSent = null;
+		}
+		
+		if (!filesSent.isEmpty())  {
+			var filesSentUri = filesSent.stream().collect(Collectors.joining(", "));
+			Utils.showInfoDialog("Assinaturas Realizadas", "Os arquivos: " + filesSentUri + " foram assinados e enviados com sucesso");
+			filesSent = null;
+		}
 	}
 
 	@Override
