@@ -57,9 +57,6 @@ public class SendFilesToService {
 	            responseExtractor
 	        );
 	        
-	        String resposta = responseEntity.getBody();
-	        System.out.println("Resposta: " + resposta);
-	        
 	        if (!responseEntity.getStatusCode().is2xxSuccessful())
 	        	throw new Exception("");
 
