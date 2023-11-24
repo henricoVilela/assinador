@@ -1,12 +1,13 @@
 package br.com.cronos.assinador.service;
 
+import static br.com.cronos.assinador.util.Utils.addHeadersIntoRestTemplate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -46,14 +47,11 @@ public class LoadFilesFromService {
 	public static FileInfo buscarPdf(String URI, Map<String, String> paramsHeaders) throws LoadPdfFromServiceException {
 		RestTemplate restTemplate = new RestTemplate();
 
+		addHeadersIntoRestTemplate(restTemplate, paramsHeaders);
+		
 		try {
 
-			HttpHeaders headers = new HttpHeaders();
-
-			for (Map.Entry<String, String> header : paramsHeaders.entrySet())
-				headers.add(header.getKey(), header.getValue());
-			
-			ResponseEntity<ByteArrayResource> response = restTemplate.getForEntity(URI, ByteArrayResource.class, new HttpEntity<HttpHeaders>(headers));
+			ResponseEntity<ByteArrayResource> response = restTemplate.getForEntity(URI, ByteArrayResource.class);
 
 			if (response.getStatusCode().is2xxSuccessful()) {
 				ByteArrayResource resource = response.getBody();

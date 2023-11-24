@@ -7,8 +7,10 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -184,6 +186,17 @@ public class Utils {
         
 		
         return signParams;
+	}
+	
+	public static void addHeadersIntoRestTemplate(RestTemplate restTemplate, Map<String, String> paramsHeaders) {
+		if (!paramsHeaders.isEmpty()) {
+			restTemplate.getInterceptors().add((request, body, clientHttpRequestExecution) -> {
+				for (Map.Entry<String, String> header : paramsHeaders.entrySet())
+					request.getHeaders().add(header.getKey(),  header.getValue());
+	       
+	            return clientHttpRequestExecution.execute(request, body);
+	        });
+		}
 	}
 	
 }
