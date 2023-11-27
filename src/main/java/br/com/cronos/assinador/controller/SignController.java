@@ -14,11 +14,13 @@ import br.com.cronos.assinador.model.strategy.SignerFiles;
 import br.com.cronos.assinador.model.strategy.SignerFilesFactory;
 import br.com.cronos.assinador.service.CertificateService;
 import br.com.cronos.assinador.util.Utils;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -65,7 +67,7 @@ public class SignController implements Initializable {
 	
 	@FXML
 	private Button btnSingDocuments;
-	
+
 	@FXML
 	private Label labelNameCertificate;
 	
@@ -180,7 +182,14 @@ public class SignController implements Initializable {
     
     @FXML
     public void onClickSignDocuments() {
-    	signerService.signDocuments(tableOfFiles.getItems(), selectedCertificate);
+    	btnSingDocuments.getScene().setCursor(Cursor.WAIT);
+    	new Thread(() -> {
+            Platform.runLater(() -> {
+            	signerService.signDocuments(tableOfFiles.getItems(), selectedCertificate);
+            	btnSingDocuments.getScene().setCursor(Cursor.DEFAULT);
+            });
+        }).start();
+    	
     }
 
 

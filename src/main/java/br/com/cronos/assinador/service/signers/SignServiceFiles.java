@@ -69,8 +69,11 @@ public class SignServiceFiles extends SignerPdfFile implements SignerFiles {
 	}
 	
 	private void notificar(List<String> filesSent, List<String> filesNotSent) {
-		if (filesNotSent.isEmpty()) 
+		
+		if (filesNotSent.isEmpty()) {
 			Utils.showInfoDialog("Assinaturas Realizadas", "Todos os arquivos foram assinados e enviado com sucesso");
+			return;
+		}
 		
 		if (!filesNotSent.isEmpty()) {
 			var filesNotSentUri = filesNotSent.stream().collect(Collectors.joining(" \n"));
