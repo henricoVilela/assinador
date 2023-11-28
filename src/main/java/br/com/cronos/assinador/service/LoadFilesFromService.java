@@ -16,6 +16,7 @@ import br.com.cronos.assinador.exceptions.LoadPdfFromServiceException;
 import br.com.cronos.assinador.model.FileInfo;
 import br.com.cronos.assinador.model.SignParamsFromService;
 import br.com.cronos.assinador.util.Utils;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -32,9 +33,11 @@ public class LoadFilesFromService {
 				var URI = String.format(url, param.getCodigo());
 
 				try {
+					
 					files.add(buscarPdf(URI, params.getHeaders()));
+					
 				} catch (LoadPdfFromServiceException e) {
-					Utils.showErrorDialog("Erro ao buscar PDF", e.getMessage());
+					Platform.runLater(() -> Utils.showErrorDialog("Erro ao buscar PDF", e.getMessage()));
 				}
 			}
 

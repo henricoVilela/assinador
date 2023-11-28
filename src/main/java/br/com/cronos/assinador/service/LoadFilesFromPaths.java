@@ -8,6 +8,7 @@ import java.util.List;
 import br.com.cronos.assinador.model.FileInfo;
 import br.com.cronos.assinador.model.SignParamsFromPaths;
 import br.com.cronos.assinador.util.Utils;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -17,8 +18,9 @@ public class LoadFilesFromPaths {
 		List<FileInfo> files = new ArrayList<>();
 		
 		if (params.stream().anyMatch(SignParamsFromPaths::naoExistePathEscrita))
-			Utils.showWarnDialog("Aviso", "Existe arquivo ao qual não foi informado o caminho para escrita, "
-					+ "então o arquivo informado para leitura sera sobrescrito com o arquivo assinado.");
+			Platform.runLater(
+				() -> Utils.showWarnDialog("Aviso", "Existe arquivo ao qual não foi informado o caminho para escrita, então o arquivo informado para leitura sera sobrescrito com o arquivo assinado.")
+			);
 		
 		String filesNotFound = "";
 		for (SignParamsFromPaths param : params) {
@@ -34,8 +36,10 @@ public class LoadFilesFromPaths {
 			
 		}
 		
-		if (!filesNotFound.isEmpty())
-			Utils.showErrorDialog("Arquivo inexistente", "Não foi possível encontrar o(s) arquivo(s): " + filesNotFound, false);
+		if (!filesNotFound.isEmpty()) {
+			final var filesName = filesNotFound;
+			Platform.runLater(() -> Utils.showErrorDialog("Arquivo inexistente", "Não foi possível encontrar o(s) arquivo(s): " + filesName, false));
+		}
 		
 		return FXCollections.observableArrayList(files);
 		

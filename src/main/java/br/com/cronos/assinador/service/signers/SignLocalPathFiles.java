@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import br.com.cronos.assinador.exceptions.StoreException;
@@ -14,6 +15,7 @@ import br.com.cronos.assinador.model.strategy.SavingMode;
 import br.com.cronos.assinador.model.strategy.SignerFiles;
 import br.com.cronos.assinador.service.LoadFilesFromPaths;
 import br.com.cronos.assinador.util.Utils;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 
 public class SignLocalPathFiles extends SignerPdfFile implements SignerFiles {
@@ -27,6 +29,10 @@ public class SignLocalPathFiles extends SignerPdfFile implements SignerFiles {
 	public void signDocuments(List<FileInfo> files, CertificateData cert) {
 		int INITIAL_SIZE = 32;
 		byte[] bytesOfFile = null;
+		
+		
+		List<String> unsaved = new ArrayList<String>();
+		List<String> saved = new ArrayList<String>();
 		
 		for (FileInfo fileInfo : files) {
 			
@@ -47,19 +53,23 @@ public class SignLocalPathFiles extends SignerPdfFile implements SignerFiles {
 				}
 				
 			} catch (StoreException se) {
-				Utils.showErrorDialog("Erro ao acessar chave do certificado", se.getMessage()); 
+				Platform.runLater(() ->Utils.showErrorDialog("Erro ao acessar chave do certificado", se.getMessage())); 
+				return;
 			} catch (IOException e) {
 	            e.printStackTrace();
-	            Utils.showErrorDialog("Erro ao atualizar documento", "Não foi possível gravar o documeto " + fileInfo.getName(), false); 
+	            unsaved.add(fileInfo.getName());
+	            
+	            continue;
 	        }
 			
+			saved.add(fileInfo.getName());
 		}
 		
 		bytesOfFile = null;
 		
-		Utils.showInfoDialog("Assinaturas Realizadas", "Os arquivos foram assinados com sucesso");
-
+		notificar(saved, unsaved);
 	}
+	
 	
 	@Override
 	public ObservableList<FileInfo> loadFiles(String argumentBase64) {

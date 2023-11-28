@@ -20,18 +20,20 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Cursor;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
@@ -42,7 +44,7 @@ public class SignController implements Initializable {
 	FileChooser fileChooser = new FileChooser();
 	
 	private CertificateData selectedCertificate;
-	private Stage waitDialog;
+	private Stage progressDialog;
 	private SavingMode savingMode;
 	private String argumentBase64;
 	private SignerFiles signerService;
@@ -173,7 +175,6 @@ public class SignController implements Initializable {
     		return;
     	}
     		
-    	
     	tableOfFiles.getItems().remove(selectedIndex);
     	
     	if (tableOfFiles.getItems().isEmpty()) 
@@ -182,12 +183,11 @@ public class SignController implements Initializable {
     
     @FXML
     public void onClickSignDocuments() {
-    	btnSingDocuments.getScene().setCursor(Cursor.WAIT);
+    	progressDialog.show();
     	new Thread(() -> {
-            Platform.runLater(() -> {
-            	signerService.signDocuments(tableOfFiles.getItems(), selectedCertificate);
-            	btnSingDocuments.getScene().setCursor(Cursor.DEFAULT);
-            });
+    		
+    		signerService.signDocuments(tableOfFiles.getItems(), selectedCertificate);
+            Platform.runLater(() -> progressDialog.close());
         }).start();
     	
     }
@@ -196,7 +196,7 @@ public class SignController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		setPdfFilter();
-		setStageShowWaitScream();
+		setStageProgressDialog();
 		
 		selectCertificates.setItems(CertificateService.loadInstalledCertificates());
 		
@@ -258,39 +258,50 @@ public class SignController implements Initializable {
     	fileChooser.setSelectedExtensionFilter(filter);
 	}
 	
-	/**
-	 * Criar um stage com o dialog de espera de processamento
-	 * para usar: waitDialog.show() exibe o modal e waitDialog.close() fecha o modal
-	 */
-	private void setStageShowWaitScream() {
-		
-		if (waitDialog != null)
+	private void setStageProgressDialog() {
+		if (progressDialog != null)
 			return;
 		
-		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/WaitScream.fxml"));
 		Stage stage = new Stage();
-		
-		try {
-			Parent root = fxmlLoader.load();
-	    	
-	    	stage.setScene(new Scene(root));
-	    	stage.setTitle("");
-	    	stage.setResizable(false);
-	    	stage.getIcons().add(Utils.getIconInfo());
-	    	stage.initModality(Modality.APPLICATION_MODAL);
-	    	stage.setOnCloseRequest(event -> event.consume());
-	    	
-		} catch (IOException e) {
-			System.err.println("Erro ao tentar carregar stage da tela de espera");
-		}
+		stage.setResizable(false);
+    	stage.getIcons().add(Utils.getApplicationIcon());
+    	stage.initModality(Modality.APPLICATION_MODAL);
     	
-		waitDialog = stage;
+		try {
+			ProgressIndicator progressIndicator = new ProgressIndicator();
+		
+			Label label = new Label("Por favor, aguarde...");
+			label.setCenterShape(true);
+			
+			BorderPane root = new BorderPane();
+
+			root.setCenter(progressIndicator);
+			root.setBottom(label);
+			BorderPane.setMargin(label, new Insets(0, 0, 50, 75));
+			
+			Scene scene = new Scene(root, 250, 200);
+			stage.setScene(scene);
+			stage.setTitle("Aguarde");
+			
+		} catch (Exception e) {
+			System.err.println("Erro ao tentar carregar stage do indicador de progresso");
+		}
+		
+		progressDialog = stage;
 	}
 	
 	public void loadTableFiles() {
 		if (this.signerService != null && this.argumentBase64 != null) {
 			disable(btnLoadFiles);
-    		tableOfFiles.setItems(signerService.loadFiles(argumentBase64));
+			
+			progressDialog.show();
+			new Thread(() -> {
+				tableOfFiles.setItems(signerService.loadFiles(argumentBase64));
+				
+				Platform.runLater(() -> progressDialog.close());
+	        }).start();
+			
+    		
     	}
 	}
 	
